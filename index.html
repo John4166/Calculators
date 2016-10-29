@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Calculater</title>
+    <style>
+        body {
+            font: normal 16px/1.2 Helvetica, Arial, sans-serif;
+            color: #333;
+            min-width: 300px;
+            max-width: 600px;
+        }
+        #calu-view {
+            width: 100%;
+            height: 110px;
+            background-color: #c5c5c5;
+            color: #fff;
+            box-sizing: border-box;
+            border: 1px solid #999999;
+            border-bottom: 0;
+            padding: 10px;
+        }
+        #calu-view #result {
+            font-size: 35px;
+            display: flex;
+            justify-content: flex-end;
+            align-items: flex-end;
+            height: 100%;
+        }
+
+        #calu-btn {
+            width: 100%;
+        }
+        .row {
+            display: -webkit-flex;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-start;
+            margin: 0 auto;
+        }
+        .row span {
+            width: 25%;
+            padding: 12px;
+            box-sizing: border-box;
+            border: 1px solid #8e8e8e;
+            border-right: 0;
+            border-bottom: 0;
+            background-color: #d6d6d6;
+            font-weight: 600;
+            display: flex;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0.9;
+            filter: Alpha(opacity:90);
+        }
+
+        .row span:active {
+            opacity: 1;
+            filter: Alpha(opacity:100);
+        }
+
+        .row span:last-child {
+            border-right: 1px solid #8e8e8e;
+            background-color: #f5923e;
+        }
+
+        .row:last-child span {
+            border-bottom: 1px solid #8e8e8e;
+        }
+
+        .row .zero {
+            width: 50%;
+            display: flex;
+            justify-content: flex-start;
+            padding-left: 11%;
+        }
+    </style>
+</head>
+<body>
+<!--结果显示区-->
+<div id="calu-view">
+    <!--计算表达式-->
+    <!--<div id="express">0</div>-->
+    <!--输出结果-->
+    <div id="result">0</div>
+</div>
+
+<!--//键盘-->
+<div id="calu-btn">
+    <div class="row">
+        <span class="" id="reset">AC</span>
+        <span class="" id="remove">rm</span>
+        <span class="ope">%</span>
+        <span class="ope">/</span>
+    </div>
+    <div class="row">
+        <span class="num">7</span>
+        <span class="num">8</span>
+        <span class="num">9</span>
+        <span class="ope">*</span>
+    </div>
+    <div class="row">
+        <span class="num">4</span>
+        <span class="num">5</span>
+        <span class="num">6</span>
+        <span class="ope">-</span>
+    </div>
+    <div class="row">
+        <span class="num">1</span>
+        <span class="num">2</span>
+        <span class="num">3</span>
+        <span class="ope">+</span>
+    </div>
+    <div class="row">
+        <span class="zero num">0</span>
+        <span class="num">.</span>
+        <span class="" id="equals">=</span>
+    </div>
+</div>
+<script>
+    window.onload = function () {
+
+        //设立变量存储计算值(firNum、secNum)和运算符(opeValue)
+        var firNum = '', secNum = '', opeValue;
+
+        //hasCal——是否已经按下过运算符号，hasEqual——是否已经按下等号
+        var hasCal = false, hasEqual = false;
+
+        //获取DOM事件对象
+        var itemArr = document.getElementById("calu-btn").getElementsByTagName("span");
+        var equalsBtn = document.getElementById("equals");  //等于按钮
+        var reset = document.getElementById("reset");     //AC按钮
+        var removeBtn = document.getElementById('remove');   //回退按钮
+        var res = document.getElementById('result');        //结果区域
+        var opeArr = [], j = 0;    //运算符数组
+        var numArr = [], k = 0;    //数字数组
+
+        //循环得出 numArr和opeArr
+        for (var i = 0; i < itemArr.length; i++) {
+            if (itemArr[i].className.indexOf('ope') > -1) {
+                opeArr[j] = itemArr[i];
+                j++;
+            }
+            if (itemArr[i].className.indexOf('num') > -1) {
+                numArr[k] = itemArr[i];
+                k++
+            }
+        }
+
+
+        //绑定数字键盘点击事件
+        for (var i = 0; i < numArr.length; i++) {
+            numArr[i].addEventListener('click', function (e) {
+                var keyValue = e.target.innerText; //当前点击的数字
+                var preNum = res.innerText;    //点击之前显示的值
+                //如果已经做了等于操作，直接选择数字，则重新初始化变量
+                if (hasEqual) {
+                    firNum = secNum = '';
+                    opeValue = undefined;
+                    hasEqual = hasCal = false;
+                }
+                /**小数点检测
+                 /*三种情况：1.如果按下前的数字等于'0'，则分为两种情况：按下了'.'键和按下别的键的情况
+                 /*        2.如果按下前的数字等于'0.'，则再按下'.'，也是'.'的值
+                 3.如果按下的键不等于以上两种，则分为两种情况，
+                 1)如果是按下了操作符后直接按下数字的操作，即test=true时，则输出'0.'
+                 2)否则，将keyValue字符串相叠加，复制给firNum
+                 /*
+                 总体思路：通过firNum获取keyValue的值，并将firNum复制给显示区显示出来
+                 */
+                var test = hasCal && keyValue === '.';
+                hasCal = false;
+                if (preNum == '0') {
+                    if (keyValue == '.') {
+                        firNum = '0.';
+                    } else {
+                        firNum = keyValue
+                    }
+                } else if (preNum == '0.' && keyValue == '.') {
+                    firNum = '0.'
+                }
+                else {
+                    if (test) {
+                        firNum = '0.';
+                    } else {
+                        firNum += keyValue;
+                    }
+                }
+                //获取当前值
+                res.innerText = firNum;
+
+            })
+        }
+
+
+        //绑定运算符键盘点击事件
+        for (var i = 0; i < opeArr.length; i++) {
+            opeArr[i].addEventListener('click', function (e) {
+                //是否已经输入过等号
+                if (hasEqual) {
+                    firNum = secNum;
+                    secNum = '';
+                    opeValue = e.target.innerText;
+                    hasEqual = false;
+                }
+                //等待输入第二个数值，除了第一次输入之外，第二次之后就进入else了，如果按下过了等于好，就一切初始化重新来
+                if (secNum == '') {
+                    secNum = firNum;
+                    firNum = '';
+                    opeValue = e.target.innerText;
+                } else {
+                    equals(opeValue);
+                    //获得当前运算符,其实也算是上一次的运算符
+                    opeValue = e.target.innerText;
+                }
+                hasCal = true;
+            })
+        }
+
+
+        //等于按钮绑定点击事件
+        equalsBtn.onclick = function () {
+
+            //如果按下了操作符，则计算
+            if (opeValue !== undefined) {
+                equals(opeValue);
+                hasEqual = true;
+            } else {
+                return false;
+            }
+        };
+
+
+        //重置按钮绑定点击事件
+        reset.onclick = function () {
+            // 重新初始化变量
+            res.innerText = '0';
+            firNum = secNum = '';
+            hasCal = hasEqual = false;
+            opeValue = undefined;
+        };
+
+
+        //设置回退按钮
+        removeBtn.onclick = function () {
+            var str = res.innerText;
+            str = str.substr(0, str.length - 1);
+            if (str.length == 0) {
+                str = '0'
+            }
+            res.innerText = firNum = str;
+        };
+
+
+        //计算函数
+        function equals(opeValue) {
+            //运算符重复检测
+            if (firNum == '' || secNum == '') {
+                return
+            }
+            var one = Number(secNum);
+            var two = Number(firNum);
+            var result = null;
+            switch (opeValue) {
+                case '+':
+                    result = (one + two);
+                    break;
+                case '-':
+                    result = one - two;
+                    break;
+                case '*':
+                    result = one * two;
+                    break;
+                case '/':
+                    result = one / two;
+                    break;
+                case '%':
+                    result = one % two;
+                    break;
+                default:
+                    break;
+            }
+
+            //赋值操作，同时将结果复制给secNum
+            res.innerText = secNum = result.toFixed(2);
+
+            //清空firNum,保证下一次firNum变量正确
+            firNum = '';
+
+        }
+
+//
+    }
+
+
+</script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Document</title>
+    <style>
+        input{
+            width: 189px;
+            height: 55px;
+            background: #949087;
+            outline: none;
+            border: 1px solid #68665F;
+            border-bottom: none;
+            text-align: right;
+            font-size: 30px;
+            color: white;
+        }
+        table{
+            border-collapse: collapse;
+        }
+        td{
+            width: 45px;
+            height: 40px;
+            background: #d6d6d6;
+            text-align: center;
+            font-size: 20px;
+        }
+        .rightCol{
+            background:#fd9441;
+        }
+
+    </style>
+</head>
+<body>
+<div class="wrap">
+    <div class="calculate">
+        <!-- disabled让input标签不接受用户操作 -->
+        <input type="text" id="showText_c" disabled value="0" />
+        <table border="">
+            <tr>
+                <td >C</td>
+                <td >+/-</td>
+                <td >%</td>
+                <td class="rightCol ope">/</td>
+            </tr>
+            <tr>
+                <td class="num">7</td>
+                <td class="num">8</td>
+                <td class="num">9</td>
+                <td class="rightCol ope">*</td>
+            </tr>
+            <tr>
+                <td class="num">4</td>
+                <td class="num">5</td>
+                <td class="num">6</td>
+                <td class="rightCol ope">-</td>
+            </tr>
+            <tr>
+                <td class="num">1</td>
+                <td class="num">2</td>
+                <td class="num">3</td>
+                <td class="rightCol ope">+</td>
+            </tr>
+            <tr>
+                <td colspan="2" class="num">0</td>
+                <td>.</td>
+                <td class="rightCol" id="result">=</td>
+            </tr>
+        </table>
+    </div>
+</div>
+</body>
+<script>
+    var inputText = document.getElementById('showText_c');
+    //2.数字按钮（all）
+    var numsArray = document.getElementsByClassName('num');
+    //3.操作按钮
+    var operationArray = document.getElementsByClassName('ope');
+    //4.获取=
+    var resultBtn = document.getElementById('result');
+    console.log(numsArray);
+    function calculate(){
+
+        //定义几个变量，用来保存运算数 以及运算符号
+        var numValue = "",  //这个变量用来保存第一个运算数
+        supendValue = "",   //这个变量用来保存第二个运算数字
+        operation="";       //用来保存运算符号（+-*/)
+
+        //第二步：点击数字按钮的时候，把内容展示到 input标签
+        for (var i = 0; i < numsArray.length; i++) {
+            numsArray[i].onclick=function(){
+                //numsArray[i].onclick的作用：开始的时候i从0-10过了一遍，
+                // function里面的this.innerHTML   this指的是点击事件，点击哪个numsArray就是哪个numsArray，这时候跟i没关系，因为i的作用就是赋予所有的numsArray具有点击事件的元素
+                //在点击的时候，(for循环完毕的时候 i=数组长度);
+                // 第一种:this；
+                // 第二种：自定义属性；
+                // 第三种:闭包；
+                if (numValue==0) {
+                    numValue="";
+                }      //numValue永远都是当前正在点的数字。
+
+                numValue += this.innerHTML;
+                inputText.value = numValue;
+
+
+            }
+        }
+        //第三步：给运算符绑定事件
+        for (var i = 0; i < operationArray.length; i++) {
+            operationArray[i].onclick=function(){
+                //（输入第二个数字的时候，input标签应该正常显示）
+                if (supendValue=="") {
+                    supendValue=numValue;  //保存numValue的值
+                    numValue="";  //清空numValue
+                    operation = this.innerHTML;   //operation=对应的运算符
+                }
+                else{
+//
+                    resultFun();
+                    operation = this.innerHTML;
+                }
+            }
+
+            //给=绑定点击事件
+            resultBtn.onclick=function(){
+                resultFun();
+
+            }
+        }
+//  //封装一个函数功能块，（计算两个数的四则运算）
+        function resultFun(){
+            var one = Number(supendValue);
+            var two = Number(numValue);
+            var result = null;
+            switch(operation){
+                case "+":
+                    result=one+two;
+                    break;
+                case "-":
+                    result=one-two;
+                    break;
+                case "*":
+                    result=one*two;
+                    break;
+                case "/":
+                    result=one/two;
+                    break;
+                default:
+                    break;
+            }
+            inputText.value = result;
+//            清空这个numValue，不要影响下一次的使用
+            numValue=""
+            supendValue=result; //supendValue 变为上一次运算的结果。
+
+        }
+    }
+
+    calculate();
+</script>
+
+</html>
